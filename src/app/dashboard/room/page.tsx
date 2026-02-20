@@ -20,7 +20,7 @@ export default function StudyRoom() {
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-        socket = io('http://localhost:3001');
+        socket = io('https://study-room-backend.onrender.com');
 
         socket.emit('join-room', 'general');
 

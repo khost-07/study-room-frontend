@@ -11,7 +11,7 @@ export default function Whiteboard() {
     const [brushRadius, setBrushRadius] = useState(3);
 
     useEffect(() => {
-        socket = io('http://localhost:3001');
+        socket = io('https://study-room-backend.onrender.com');
         socket.emit('join-room', 'whiteboard-room');
 
         socket.on('draw', (data: any) => {
