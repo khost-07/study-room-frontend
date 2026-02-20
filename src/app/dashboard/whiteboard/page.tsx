@@ -1,35 +1,29 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
-import dynamic from 'next/dynamic';
-
-const WhiteboardCanvas = dynamic(() => import('@/components/WhiteboardCanvas'), {
-    ssr: false,
-});
 
 let socket: Socket;
 
 export default function Whiteboard() {
-    const canvasRef = useRef<any>(null);
+    const canvasRef = useRef<HTMLCanvasElement>(null);
     const [color, setColor] = useState('#2dd4bf'); // teal-400
     const [brushRadius, setBrushRadius] = useState(3);
+    const [isDrawing, setIsDrawing] = useState(false);
 
     useEffect(() => {
         socket = io('https://study-room-backend.onrender.com');
         socket.emit('join-room', 'whiteboard-room');
 
         socket.on('draw', (data: any) => {
-            if (canvasRef.current && data.saveData) {
-                // Ensure component is fully mounted before loading data
-                setTimeout(() => {
-                    if (canvasRef.current) {
-                        try {
-                            canvasRef.current.loadSaveData(data.saveData, true);
-                        } catch (e) {
-                            console.error("Canvas draw error avoided:", e);
-                        }
-                    }
-                }, 100);
+            if (data.saveData && canvasRef.current) {
+                const canvas = canvasRef.current;
+                const ctx = canvas.getContext('2d');
+                const img = new Image();
+                img.onload = () => {
+                    ctx?.clearRect(0, 0, canvas.width, canvas.height); // clear before drawing new state
+                    ctx?.drawImage(img, 0, 0);
+                };
+                img.src = data.saveData;
             }
         });
 
@@ -38,19 +32,90 @@ export default function Whiteboard() {
         };
     }, []);
 
-    const handleDraw = () => {
+    useEffect(() => {
+        // Initialize canvas sizing
+        const canvas = canvasRef.current;
+        if (canvas && canvas.parentElement) {
+            canvas.width = canvas.parentElement.clientWidth;
+            canvas.height = canvas.parentElement.clientHeight;
+            // Set base color
+            const ctx = canvas.getContext('2d');
+            if (ctx) {
+                ctx.fillStyle = '#1f2937';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            }
+        }
+    }, []);
+
+    const emitDrawing = () => {
         if (canvasRef.current) {
-            const saveData = canvasRef.current.getSaveData();
+            const saveData = canvasRef.current.toDataURL();
             socket.emit('draw', { roomId: 'whiteboard-room', saveData });
         }
     };
 
+    const getMousePos = (e: React.MouseEvent | React.TouchEvent) => {
+        const canvas = canvasRef.current;
+        if (!canvas) return { x: 0, y: 0 };
+        const rect = canvas.getBoundingClientRect();
+
+        let clientX = 0, clientY = 0;
+
+        if (e.type.includes('touch')) {
+            const touchEvent = e as unknown as TouchEvent;
+            if (touchEvent.touches.length > 0) {
+                clientX = touchEvent.touches[0].clientX;
+                clientY = touchEvent.touches[0].clientY;
+            }
+        } else {
+            const mouseEvent = e as React.MouseEvent;
+            clientX = mouseEvent.clientX;
+            clientY = mouseEvent.clientY;
+        }
+
+        return {
+            x: clientX - rect.left,
+            y: clientY - rect.top
+        };
+    };
+
+    const startDrawing = (e: React.MouseEvent | React.TouchEvent) => {
+        setIsDrawing(true);
+        draw(e);
+    };
+
+    const stopDrawing = () => {
+        setIsDrawing(false);
+        const ctx = canvasRef.current?.getContext('2d');
+        if (ctx) ctx.beginPath(); // reset path
+        emitDrawing();
+    };
+
+    const draw = (e: React.MouseEvent | React.TouchEvent) => {
+        if (!isDrawing) return;
+        const canvas = canvasRef.current;
+        const ctx = canvas?.getContext('2d');
+        if (!canvas || !ctx) return;
+
+        const pos = getMousePos(e);
+
+        ctx.lineWidth = brushRadius;
+        ctx.lineCap = 'round';
+        ctx.strokeStyle = color;
+
+        ctx.lineTo(pos.x, pos.y);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(pos.x, pos.y);
+    };
+
     const clearCanvas = () => {
-        if (canvasRef.current) {
-            canvasRef.current.clear();
-            // Emitting an empty standard setup to clear for others as well
-            const emptySaveData = canvasRef.current.getSaveData();
-            socket.emit('draw', { roomId: 'whiteboard-room', saveData: emptySaveData });
+        const canvas = canvasRef.current;
+        const ctx = canvas?.getContext('2d');
+        if (canvas && ctx) {
+            ctx.fillStyle = '#1f2937';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            emitDrawing();
         }
     };
 
@@ -97,17 +162,17 @@ export default function Whiteboard() {
                 </div>
             </div>
 
-            <div className="flex-1 bg-white rounded-2xl overflow-hidden border border-gray-700 shadow-2xl relative" style={{ cursor: 'crosshair' }}>
-                <WhiteboardCanvas
+            <div className="flex-1 bg-gray-800 rounded-2xl overflow-hidden border border-gray-700 shadow-2xl relative" style={{ cursor: 'crosshair', touchAction: 'none' }}>
+                <canvas
                     ref={canvasRef}
-                    brushColor={color}
-                    brushRadius={brushRadius}
-                    lazyRadius={0}
-                    canvasWidth={'100%'}
-                    canvasHeight={'100%'}
-                    onChange={handleDraw}
-                    hideGrid={true}
-                    backgroundColor="#1f2937" // gray-800 layout base
+                    onMouseDown={startDrawing}
+                    onMouseUp={stopDrawing}
+                    onMouseLeave={stopDrawing}
+                    onMouseMove={draw}
+                    onTouchStart={startDrawing}
+                    onTouchEnd={stopDrawing}
+                    onTouchMove={draw}
+                    className="w-full h-full block"
                 />
             </div>
         </div>
