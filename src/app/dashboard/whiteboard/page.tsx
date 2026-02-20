@@ -1,7 +1,11 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
-import CanvasDraw from 'react-canvas-draw';
+import dynamic from 'next/dynamic';
+
+const WhiteboardCanvas = dynamic(() => import('@/components/WhiteboardCanvas'), {
+    ssr: false,
+});
 
 let socket: Socket;
 
@@ -94,7 +98,7 @@ export default function Whiteboard() {
             </div>
 
             <div className="flex-1 bg-white rounded-2xl overflow-hidden border border-gray-700 shadow-2xl relative" style={{ cursor: 'crosshair' }}>
-                <CanvasDraw
+                <WhiteboardCanvas
                     ref={canvasRef}
                     brushColor={color}
                     brushRadius={brushRadius}
