@@ -16,7 +16,16 @@ export default function Whiteboard() {
 
         socket.on('draw', (data: any) => {
             if (canvasRef.current && data.saveData) {
-                canvasRef.current.loadSaveData(data.saveData, true);
+                // Ensure component is fully mounted before loading data
+                setTimeout(() => {
+                    if (canvasRef.current) {
+                        try {
+                            canvasRef.current.loadSaveData(data.saveData, true);
+                        } catch (e) {
+                            console.error("Canvas draw error avoided:", e);
+                        }
+                    }
+                }, 100);
             }
         });
 
