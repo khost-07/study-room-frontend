@@ -96,7 +96,8 @@ export default function StudyGroupRoom() {
                                     SHOW_CHROME_EXTENSION_BANNER: false,
                                 }}
                                 userInfo={{
-                                    displayName: user?.name || 'Anonymous Student'
+                                    displayName: user?.name || 'Anonymous Student',
+                                    email: user?.email || 'student@studyroom.app'
                                 }}
                                 onApiReady={(externalApi) => {
                                     // Make sure it takes up the full space
