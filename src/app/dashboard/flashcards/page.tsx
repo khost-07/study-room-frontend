@@ -17,7 +17,7 @@ export default function Flashcards() {
 
     const fetchDecks = async () => {
         try {
-            const res = await fetch('http://localhost:3001/api/flashcards/decks', {
+            const res = await fetch('https://study-room-backend.onrender.com/api/flashcards/decks', {
                 headers: { Authorization: `Bearer ${token}` }
             });
             if (res.ok) {
@@ -36,7 +36,7 @@ export default function Flashcards() {
         if (!newTitle.trim()) return;
 
         try {
-            const res = await fetch('http://localhost:3001/api/flashcards/decks', {
+            const res = await fetch('https://study-room-backend.onrender.com/api/flashcards/decks', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
