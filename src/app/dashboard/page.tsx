@@ -50,7 +50,7 @@ export default function Dashboard() {
                 {quickLinks.map((link) => {
                     const Icon = link.icon;
                     return (
-                        <Link href={link.href} key={link.title}>
+                        <Link href={link.href} key={link.title} scroll={false}>
                             <div className={`group relative p-6 rounded-3xl ${link.bgLight} border border-white/80 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] cursor-pointer h-full flex flex-col overflow-hidden`}>
                                 {/* Soft ambient hover glow */}
                                 <div className={`absolute -right-10 -top-10 w-32 h-32 rounded-full bg-gradient-to-br ${link.color} opacity-10 blur-2xl group-hover:opacity-20 transition-opacity duration-500`} />
