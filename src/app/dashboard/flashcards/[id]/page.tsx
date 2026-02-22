@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/authStore';
-import { ArrowLeft, Plus, Trash2, Edit2, PlayCircle, Sparkles, Layers } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, Edit2, PlayCircle, Sparkles, Layers, ArrowRight, ChevronRight, CreditCard } from 'lucide-react';
 
 interface Flashcard {
     id: string;

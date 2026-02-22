@@ -42,7 +42,9 @@ export default function StudyRoom() {
     }, [user]);
 
     useEffect(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+        if (messages.length > 0) {
+            messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
     }, [messages]);
 
     const sendMessage = (e: React.FormEvent) => {
@@ -101,8 +103,8 @@ export default function StudyRoom() {
                         <span className="text-xs font-bold text-gray-400 mb-1.5 px-2">{msg.sender}</span>
                         <div
                             className={`px-5 py-3.5 rounded-2xl max-w-[80%] shadow-sm font-medium ${msg.isMe
-                                    ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-tr-sm shadow-blue-500/20'
-                                    : 'bg-white text-gray-800 rounded-tl-sm border border-gray-100'
+                                ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-tr-sm shadow-blue-500/20'
+                                : 'bg-white text-gray-800 rounded-tl-sm border border-gray-100'
                                 }`}
                         >
                             {msg.text}
