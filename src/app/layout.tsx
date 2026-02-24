@@ -10,6 +10,8 @@ export const metadata = {
   description: 'Real-time online study space supporting chat, whiteboard, flashcards, quizzes, scheduling, and group productivity.',
 };
 
+import { ToastProvider } from '@/components/ui/Toast';
+
 export default function RootLayout({
   children,
 }: {
@@ -18,10 +20,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.className} bg-gray-50 text-gray-900 min-h-screen flex flex-col antialiased selection:bg-blue-200 selection:text-blue-900 overflow-x-hidden`}>
-        <CustomCursor />
-        <BootAnimation>
-          {children}
-        </BootAnimation>
+        <ToastProvider>
+          <CustomCursor />
+          <BootAnimation>
+            {children}
+          </BootAnimation>
+        </ToastProvider>
       </body>
     </html>
   );

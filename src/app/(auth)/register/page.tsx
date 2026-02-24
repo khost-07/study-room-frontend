@@ -4,20 +4,26 @@ import { useAuthStore } from '@/store/authStore';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { BookOpen } from 'lucide-react';
-import { LiquidGlassCard } from '@/components/ui/LiquidGlassCard';
 import { PageTransition } from '@/components/ui/PageTransition';
+import { FloatingInput } from '@/components/ui/FloatingInput';
+import { TiltCard } from '@/components/ui/TiltCard';
+import { MeshGradient } from '@/components/ui/MeshGradient';
+import { MorphingButton, ButtonState } from '@/components/ui/MorphingButton';
 
 export default function Register() {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
+    const [status, setStatus] = useState<ButtonState>('idle');
     const router = useRouter();
     const { setToken, setUser } = useAuthStore();
 
     const handleRegister = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
+        setStatus('loading');
+
         try {
             const res = await fetch('https://study-room-backend.onrender.com/api/auth/register', {
                 method: 'POST',
@@ -29,111 +35,102 @@ export default function Register() {
 
             setToken(data.token);
             setUser(data.user);
-            router.push('/dashboard');
+            setStatus('success');
+
+            // Wait for morphing transition to show success before navigating
+            setTimeout(() => {
+                router.push('/dashboard');
+            }, 1000);
+
         } catch (err: any) {
             setError(err.message);
+            setStatus('idle');
         }
     };
 
     return (
         <PageTransition>
-            <div className="min-h-screen flex items-center justify-center bg-gray-50 relative overflow-hidden text-gray-800">
-                {/* Ambient Animated Gradients */}
-                <div className="absolute top-[-10%] left-[-10%] w-[50vw] h-[50vw] rounded-full bg-emerald-300/40 blur-[120px] mix-blend-multiply animate-blob pointer-events-none" />
-                <div className="absolute top-[20%] right-[-10%] w-[45vw] h-[45vw] rounded-full bg-teal-300/40 blur-[120px] mix-blend-multiply animate-blob animation-delay-2000 pointer-events-none" />
-                <div className="absolute bottom-[-20%] left-[20%] w-[60vw] h-[60vw] rounded-full bg-blue-300/30 blur-[150px] mix-blend-multiply animate-blob animation-delay-4000 pointer-events-none" />
-
-                <div className="relative z-10 w-full max-w-md px-6">
-                    <LiquidGlassCard className="p-10" interactive={false} colorHint="bg-teal-400">
+            <MeshGradient>
+                <div className="relative z-10 w-full max-w-[420px] px-4 py-8">
+                    <TiltCard className="p-8 md:p-10">
                         <div className="flex flex-col items-center mb-8">
-                            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-500/20 mb-4">
+                            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-[0_0_30px_rgba(59,130,246,0.3)] mb-6 ring-1 ring-white/60">
                                 <BookOpen className="text-white w-7 h-7" />
                             </div>
-                            <h2 className="text-3xl font-extrabold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
+                            <h2 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-gray-900 to-gray-500 tracking-tight">
                                 Create Account
                             </h2>
-                            <p className="text-gray-500 text-sm mt-2">Join to start your collaborative learning journey</p>
+                            <p className="text-gray-500 text-sm mt-2 font-medium tracking-wide">
+                                Join to start your journey
+                            </p>
                         </div>
 
                         {error && (
-                            <div className="bg-rose-50/50 backdrop-blur-md border border-rose-200 text-rose-600 px-4 py-3 rounded-xl text-sm mb-6 text-center font-medium shadow-sm">
+                            <div className="bg-red-500/10 backdrop-blur-md border border-red-500/20 text-red-400 px-4 py-3 rounded-xl text-sm mb-6 text-center font-medium shadow-sm animate-shake">
                                 {error}
                             </div>
                         )}
 
                         <form onSubmit={handleRegister} className="flex flex-col gap-5">
-                            <div className="space-y-1.5">
-                                <label className="text-sm font-semibold text-gray-700 pl-1">Full Name</label>
-                                <input
-                                    type="text"
-                                    placeholder="John Doe"
-                                    className="w-full p-3.5 rounded-xl bg-white/50 border border-gray-200/60 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500 focus:bg-white text-gray-800 placeholder-gray-400 transition-all shadow-sm backdrop-blur-sm"
-                                    value={name}
-                                    onChange={(e) => setName(e.target.value)}
-                                    required
-                                />
-                            </div>
+                            <FloatingInput
+                                label="Full Name"
+                                type="text"
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
+                                required
+                                autoFocus
+                            />
 
-                            <div className="space-y-1.5">
-                                <label className="text-sm font-semibold text-gray-700 pl-1">Email</label>
-                                <input
-                                    type="email"
-                                    placeholder="you@example.com"
-                                    className="w-full p-3.5 rounded-xl bg-white/50 border border-gray-200/60 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500 focus:bg-white text-gray-800 placeholder-gray-400 transition-all shadow-sm backdrop-blur-sm"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    required
-                                />
-                            </div>
+                            <FloatingInput
+                                label="Email address"
+                                type="email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                required
+                            />
 
-                            <div className="space-y-1.5">
-                                <label className="text-sm font-semibold text-gray-700 pl-1">Password</label>
-                                <input
+                            <div>
+                                <FloatingInput
+                                    label="Password"
                                     type="password"
-                                    placeholder="••••••••"
-                                    className="w-full p-3.5 rounded-xl bg-white/50 border border-gray-200/60 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500 focus:bg-white text-gray-800 placeholder-gray-400 transition-all shadow-sm backdrop-blur-sm"
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     required
                                 />
+                                {/* Optional: could add strength indicator here later */}
                             </div>
 
-                            <button
+                            <MorphingButton
                                 type="submit"
-                                className="mt-2 w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white p-4 rounded-xl font-bold shadow-lg shadow-emerald-500/25 transition-all duration-300 hover:shadow-emerald-500/40 active:scale-[0.98]"
+                                status={status}
+                                className="mt-4"
                             >
                                 Sign Up
-                            </button>
+                            </MorphingButton>
                         </form>
 
-                        <p className="mt-8 text-center text-gray-500 text-sm font-medium">
-                            Already have an account?{' '}
-                            <Link href="/login" className="text-emerald-600 hover:text-emerald-700 hover:underline transition-colors font-bold">
+                        <div className="mt-8 flex items-center justify-center gap-2 text-sm text-gray-500 font-medium">
+                            <span>Already have an account?</span>
+                            <Link href="/login" className="font-bold text-blue-600 relative group">
                                 Log in
+                                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 transition-all duration-300 group-hover:w-full"></span>
                             </Link>
-                        </p>
-                    </LiquidGlassCard>
+                        </div>
+                    </TiltCard>
                 </div>
 
-                {/* Tailwind Blob Animation */}
+                {/* Shake animation for errors */}
                 <style jsx global>{`
-                @keyframes blob {
-                    0% { transform: translate(0px, 0px) scale(1); }
-                    33% { transform: translate(30px, -50px) scale(1.1); }
-                    66% { transform: translate(-20px, 20px) scale(0.9); }
-                    100% { transform: translate(0px, 0px) scale(1); }
-                }
-                .animate-blob {
-                    animation: blob 10s infinite;
-                }
-                .animation-delay-2000 {
-                    animation-delay: 2s;
-                }
-                .animation-delay-4000 {
-                    animation-delay: 4s;
-                }
-            `}</style>
-            </div>
+                    @keyframes shake {
+                        0%, 100% { transform: translateX(0); }
+                        10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
+                        20%, 40%, 60%, 80% { transform: translateX(4px); }
+                    }
+                    .animate-shake {
+                        animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+                    }
+                `}</style>
+            </MeshGradient>
         </PageTransition>
     );
 }
